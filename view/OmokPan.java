@@ -6,18 +6,17 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 public class OmokPan extends JPanel {
 	private static final long serialVersionUID = 5954310059018794006L;
-	private ArrayList<OmokDol> omokList;
-	private int size = 30;
+	private ArrayList<OmokDol> omokList; // 오목돌을 저장할 리스트
+	private int size = 30; // 바둑판의 사이즈
 
-	private int shadowX;
-	private int shadowY;
+	private int shadowX, shadowY; // 바둑돌이 놓일 위치를 미리 보여주는 좌표값.
 	private boolean flag;
 
 	public OmokPan() {
@@ -53,15 +52,13 @@ public class OmokPan extends JPanel {
 					flag = true;
 				}
 
-				System.out.println(x + ", " + y);
-
 				repaint();
 				if (isWinH(dol)) {
-					JOptionPane.showMessageDialog(OmokPan.this, "승리");
+					JOptionPane.showMessageDialog(OmokPan.this, dol.getColor() == Dol.BLACK ? "흑돌 승리!!!" : "백돌 승리!!!");
 					clear();
 				}
 				if (isWinV(dol)) {
-					JOptionPane.showMessageDialog(OmokPan.this, "승리");
+					JOptionPane.showMessageDialog(OmokPan.this, dol.getColor() == Dol.BLACK ? "흑돌 승리!!!" : "백돌 승리!!!");
 					clear();
 				}
 			}
@@ -77,6 +74,99 @@ public class OmokPan extends JPanel {
 				repaint();
 			}
 		});
+	}
+
+	public void cancel() {
+		if (omokList.size() > 0) {
+			omokList.remove(omokList.size() - 1);
+			repaint();
+		}
+	}
+
+	public void clear() {
+		omokList.clear();
+		repaint();
+	}
+
+	// 바둑돌이 이미 자리에 있는지 확인
+	public boolean hasPosition(int x, int y) {
+		boolean result = false;
+		for (OmokDol dol : omokList) {
+			if (x == dol.getX() && y == dol.getY()) {
+				result = true;
+				break;
+			}
+		}
+		return result;
+	}
+
+	// 마우스가 바둑판 가장자리에 있는지 검사
+	public boolean isOnEdge(int x, int y) {
+		boolean result = true;
+
+		if (x != -15 && x != 585 && y != -15 && y != 585) {
+			result = false;
+		}
+
+		return result;
+	}
+
+	// 일렬로 세운 돌의 개수를 세어주는 메소드.
+	public int countDol(ArrayList<Integer> list) {
+		int result = 0;
+		Collections.sort(list);
+		int temp = list.get(0);
+		for (int i = 1; i < list.size(); i++) {
+			if (list.get(i) - temp == size) {
+				result++;
+			}
+			temp = list.get(i);
+		}
+		return result;
+	}
+
+	// 가로가 5개이면 승리.
+	public boolean isWinH(OmokDol dol) {
+		boolean result = false;
+		ArrayList<Integer> list = new ArrayList<Integer>();
+
+		for (OmokDol omok : omokList) {
+			if (omok.getColor() == dol.getColor() && omok.getY() == dol.getY()) {
+				list.add(omok.getX());
+			}
+		}
+
+		if (list.size() == 0) {
+			return false;
+		}
+
+		if (countDol(list) == 4) {
+			result = true;
+		}
+
+		return result;
+	}
+
+	// 세로가 5개이면 승리.
+	public boolean isWinV(OmokDol dol) {
+		boolean result = false;
+		ArrayList<Integer> list = new ArrayList<Integer>();
+
+		for (OmokDol omok : omokList) {
+			if (omok.getColor() == dol.getColor() && omok.getX() == dol.getX()) {
+				list.add(omok.getY());
+			}
+		}
+
+		if (list.size() == 0) {
+			return false;
+		}
+
+		if (countDol(list) == 4) {
+			result = true;
+		}
+
+		return result;
 	}
 
 	@Override
@@ -104,122 +194,5 @@ public class OmokPan extends JPanel {
 			g.setColor(Color.DARK_GRAY);
 			g.drawOval(shadowX, shadowY, size, size);
 		}
-	}
-
-	// 마우스가 바둑판 가장자리에 있는지 검사
-	public boolean isOnEdge(int x, int y) {
-		boolean result = true;
-
-		if (x != -15 && x != 585 && y != -15 && y != 585) {
-			result = false;
-		}
-
-		return result;
-	}
-
-	// 바둑돌이 이미 자리에 있는지 확인
-	public boolean hasPosition(int x, int y) {
-		boolean result = false;
-		for (OmokDol dol : omokList) {
-			if (x == dol.getX() && y == dol.getY()) {
-				result = true;
-				break;
-			}
-		}
-		return result;
-	}
-
-	public void clear() {
-		omokList.clear();
-		repaint();
-	}
-
-	public void cancel() {
-		if (omokList.size() > 0) {
-			omokList.remove(omokList.size() - 1);
-			repaint();
-		}
-	}
-
-	public boolean isWinH(OmokDol dol) {
-		boolean result = false;
-		ArrayList<OmokDol> list = new ArrayList<OmokDol>();
-
-		list.add(dol);
-		for (OmokDol omok : omokList) { // 들어온 오목과 같은 색깔만 담음.
-			if (omok.getColor() == dol.getColor() && omok.getY() == dol.getY()) {
-				list.add(omok);
-			}
-		}
-
-		if (list.size() == 0) {
-			return false;
-		}
-
-		int[] arr = new int[list.size()];
-
-		for (int i = 0; i < arr.length; i++) {
-			arr[i] = list.get(i).getX();
-		}
-
-		int cnt = countDol(arr);
-
-		if (cnt > 4) {
-			result = false;
-		} else if (cnt == 4) {
-			result = true;
-		}
-
-		return result;
-	}
-
-	public boolean isWinV(OmokDol dol) {
-		boolean result = false;
-		ArrayList<OmokDol> list = new ArrayList<OmokDol>();
-
-		list.add(dol);
-		for (OmokDol omok : omokList) {
-			if (omok.getColor() == dol.getColor() && omok.getX() == dol.getX()) {
-				list.add(omok);
-			}
-		}
-
-		if (list.size() == 0) {
-			return false;
-		}
-
-		int[] arr = new int[list.size()];
-
-		for (int i = 0; i < arr.length; i++) {
-			arr[i] = list.get(i).getY();
-		}
-
-		int cnt = countDol(arr);
-
-		if (cnt > 4) {
-			result = false;
-		} else if (cnt == 4) {
-			result = true;
-		}
-
-		return result;
-	}
-
-	public void test() {
-
-	}
-
-	public int countDol(int[] arr) {
-		int result = 0;
-		Arrays.sort(arr);
-
-		int temp = arr[0];
-		for (int i = 1; i < arr.length; i++) {
-			if (arr[i] - temp == size) {
-				temp = arr[i];
-				result++;
-			}
-		}
-		return result;
 	}
 }
