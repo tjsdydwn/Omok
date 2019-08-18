@@ -33,7 +33,7 @@ public class OmokPan extends JPanel {
 
 				int x = (int) Math.round(e.getX() / (double) size) * size - 15;
 				int y = (int) Math.round(e.getY() / (double) size) * size - 15;
-
+				System.out.println("x :" + x + ", y :" + y);
 				if (hasPosition(x, y)) {
 					return;
 				}
@@ -53,11 +53,8 @@ public class OmokPan extends JPanel {
 				}
 
 				repaint();
-				if (isWinH(dol)) {
-					JOptionPane.showMessageDialog(OmokPan.this, dol.getColor() == Dol.BLACK ? "흑돌 승리!!!" : "백돌 승리!!!");
-					clear();
-				}
-				if (isWinV(dol)) {
+
+				if (isWinH(dol) || isWinV(dol) || isWinRightDown(dol) || isWinLeftDonw(dol)) {
 					JOptionPane.showMessageDialog(OmokPan.this, dol.getColor() == Dol.BLACK ? "흑돌 승리!!!" : "백돌 승리!!!");
 					clear();
 				}
@@ -85,6 +82,7 @@ public class OmokPan extends JPanel {
 
 	public void clear() {
 		omokList.clear();
+		flag = true;
 		repaint();
 	}
 
@@ -119,6 +117,8 @@ public class OmokPan extends JPanel {
 		for (int i = 1; i < list.size(); i++) {
 			if (list.get(i) - temp == size) {
 				result++;
+			} else {
+				result = 0;
 			}
 			temp = list.get(i);
 		}
@@ -136,7 +136,7 @@ public class OmokPan extends JPanel {
 			}
 		}
 
-		if (list.size() == 0) {
+		if (list.size() < 5) {
 			return false;
 		}
 
@@ -158,7 +158,52 @@ public class OmokPan extends JPanel {
 			}
 		}
 
-		if (list.size() == 0) {
+		if (list.size() < 5) {
+			return false;
+		}
+
+		if (countDol(list) == 4) {
+			result = true;
+		}
+
+		return result;
+	}
+
+	// 우하향 5개이면 승리
+	public boolean isWinRightDown(OmokDol dol) {
+		boolean result = false;
+		ArrayList<Integer> list = new ArrayList<Integer>();
+		int gap = dol.getX() - dol.getY();
+
+		for (OmokDol omok : omokList) {
+			if (omok.getColor() == dol.getColor() && omok.getX() - omok.getY() == gap) {
+				list.add(omok.getX());
+			}
+		}
+
+		if (list.size() < 5) {
+			return false;
+		}
+
+		if (countDol(list) == 4) {
+			result = true;
+		}
+
+		return result;
+	}
+
+	// 좌하향 5개이면 승리
+	public boolean isWinLeftDonw(OmokDol dol) {
+		boolean result = false;
+		ArrayList<Integer> list = new ArrayList<Integer>();
+		int gap = dol.getX() + dol.getY();
+		for (OmokDol omok : omokList) {
+			if (omok.getColor() == dol.getColor() && omok.getX() + omok.getY() == gap) {
+				list.add(omok.getY());
+			}
+		}
+
+		if (list.size() < 5) {
 			return false;
 		}
 
